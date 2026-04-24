@@ -1,5 +1,11 @@
 const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+let prisma;
+try {
+  prisma = new PrismaClient();
+} catch (error) {
+  console.error("Failed to initialize Prisma client:", error);
+  prisma = null;
+}
 
 const VALID_GENDERS = ["male", "female"];
 const VALID_AGE_GROUPS = ["child", "teenager", "adult", "senior"];
@@ -7,20 +13,26 @@ const VALID_SORT_FIELDS = ["age", "created_at", "gender_probability"];
 const VALID_ORDERS = ["asc", "desc"];
 
 exports.getProfiles = async (req, res) => {
-  try {
-    const {
-      gender,
-      age_group,
-      country_id,
-      min_age,
-      max_age,
-      min_gender_probability,
-      min_country_probability,
-      sort_by,
-      order = "asc",
-      page = 1,
-      limit = 10
-    } = req.query;
+   if (!prisma) {
+     return res.status(500).json({
+       status: "error",
+       message: "Database connection failed"
+     });
+   }
+   try {
+     const {
+       gender,
+       age_group,
+       country_id,
+       min_age,
+       max_age,
+       min_gender_probability,
+       min_country_probability,
+       sort_by,
+       order = "asc",
+       page = 1,
+       limit = 10
+     } = req.query;
 
     const errors = [];
 

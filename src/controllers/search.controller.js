@@ -1,10 +1,22 @@
 const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+let prisma;
+try {
+  prisma = new PrismaClient();
+} catch (error) {
+  console.error("Failed to initialize Prisma client:", error);
+  prisma = null;
+}
 const { parseQuery } = require("../utils/nlp");
 
 exports.searchProfiles = async (req, res) => {
-  try {
-    const { q, page = 1, limit = 10 } = req.query;
+   if (!prisma) {
+     return res.status(500).json({
+       status: "error",
+       message: "Database connection failed"
+     });
+   }
+   try {
+     const { q, page = 1, limit = 10 } = req.query;
 
     // Validate query parameter
     if (!q || q.trim() === "") {
