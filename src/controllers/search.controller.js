@@ -6,15 +6,34 @@ exports.searchProfiles = async (req, res) => {
   try {
     const { q, page = 1, limit = 10 } = req.query;
 
-    if (!q) {
+    // Validate query parameter
+    if (!q || q.trim() === "") {
       return res.status(400).json({
         status: "error",
-        message: "Missing query"
+        message: "Missing or empty query parameter"
       });
     }
 
-    const filters = parseQuery(q);
+    // Validate and parse pagination
+    const pageNum = Number(page);
+    if (isNaN(pageNum) || pageNum < 1) {
+      return res.status(422).json({
+        status: "error",
+        message: "Invalid query parameters"
+      });
+    }
 
+    let limitNum = Number(limit);
+    if (isNaN(limitNum) || limitNum < 1) {
+      return res.status(422).json({
+        status: "error",
+        message: "Invalid query parameters"
+      });
+    }
+    if (limitNum > 50) limitNum = 50; // Cap limit at 50
+
+    // Parse natural language query
+    const filters = parseQuery(q);
     if (!filters) {
       return res.status(422).json({
         status: "error",
@@ -22,29 +41,33 @@ exports.searchProfiles = async (req, res) => {
       });
     }
 
-    const skip = (page - 1) * limit;
+    // Pagination
+    const skip = (pageNum - 1) * limitNum;
 
+    // Execute queries
     const [data, total] = await Promise.all([
       prisma.profile.findMany({
         where: filters,
-        skip: Number(skip),
-        take: Number(limit),
+        orderBy: { created_at: "desc" }, // Default sort for search
+        skip,
+        take: limitNum,
       }),
       prisma.profile.count({ where: filters }),
     ]);
 
     res.json({
       status: "success",
-      page: Number(page),
-      limit: Number(limit),
+      page: pageNum,
+      limit: limitNum,
       total,
       data,
     });
 
   } catch (err) {
+    console.error("Search controller error:", err);
     res.status(500).json({
       status: "error",
-      message: err.message,
+      message: "Server error"
     });
   }
 };

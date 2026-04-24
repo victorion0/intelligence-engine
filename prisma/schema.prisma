@@ -9,7 +9,7 @@ datasource db {
 }
 
 model Profile {
-  id                  String   @id @default(cuid())
+  id                  String   @id // UUID v7 generated in application layer
   name                String   @unique
   gender              String
   gender_probability  Float
@@ -19,4 +19,12 @@ model Profile {
   country_name        String
   country_probability Float
   created_at          DateTime @default(now())
+
+  @@index([gender])
+  @@index([age_group])
+  @@index([country_id])
+  @@index([age])
+  @@index([gender_probability])
+  @@index([country_probability])
+  @@index([created_at])
 }
