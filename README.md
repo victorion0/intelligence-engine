@@ -15,7 +15,7 @@ A production-ready backend system for Insighta Labs to query demographic profile
 ## Tech Stack
 
 - Node.js + Express
-- PostgreSQL (hosted on Supabase)
+- PostgreSQL (hosted on Supabase or any PostgreSQL provider)
 - Prisma ORM
 - UUID v7 for unique identifiers
 
